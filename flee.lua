@@ -45,8 +45,21 @@ local TEXT_ON     = THEMES.RED.accent
 local ThemedElements = { windows = {}, toggles = {}, buttons = {}, dropdowns = {}, sections = {} }
 
 -- ============================================================
--- ROOT
+-- ROOT  (above everything, including CoreGui)
 -- ============================================================
+local guiParent
+pcall(function()
+    if gethui then guiParent = gethui() end
+end)
+if not guiParent then
+    pcall(function()
+        guiParent = game:GetService("CoreGui")
+    end)
+end
+if not guiParent then
+    guiParent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "BlackoutTripleGUI"
 ScreenGui.ResetOnSpawn = false
@@ -54,7 +67,7 @@ ScreenGui.IgnoreGuiInset = true
 ScreenGui.DisplayOrder = 2147483647
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Enabled = false
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Parent = guiParent
 
 -- ============================================================
 -- HELPERS (ported from Tracery)
@@ -131,14 +144,14 @@ local function GetHiddenGui()
 end
 
 local function getSafeParent(SName)
-    local guiParent = GetHiddenGui()
+    local guiParent2 = GetHiddenGui()
     if not SName then SName = "nia = aura" end
     local fn = `SHub_ESP_{SName}`
-    local folder = guiParent:FindFirstChild(fn)
+    local folder = guiParent2:FindFirstChild(fn)
     if not folder then
         folder = Instance.new("Folder")
         folder.Name = fn
-        folder.Parent = guiParent
+        folder.Parent = guiParent2
     end
     return folder
 end
@@ -232,7 +245,7 @@ local function IsWhilstPlayer(name)
 end
 
 -- ============================================================
--- LOADING SPLASH SCREEN
+-- LOADING SPLASH SCREEN  (same top-tier parent)
 -- ============================================================
 local LoadGui = Instance.new("ScreenGui")
 LoadGui.Name = "BlackoutLoader"
@@ -240,7 +253,7 @@ LoadGui.ResetOnSpawn = false
 LoadGui.IgnoreGuiInset = true
 LoadGui.DisplayOrder = 2147483647
 LoadGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-LoadGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+LoadGui.Parent = guiParent
 
 local LoadBG = Instance.new("Frame")
 LoadBG.Size = UDim2.new(1, 0, 1, 0)
