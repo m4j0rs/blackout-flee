@@ -1,10 +1,8 @@
 -- ============================================================
--- BLACKOUT GUI v2 | RED EDITION | TRACERY PORT
--- Re-skinned to Blackout triple-panel layout
+-- BLACKOUT GUI v2 | RED EDITION | TRACERY PORT + THEME
 -- ============================================================
 wait(2)
 if game.PlaceId ~= 893973440 then return end
-
 
 local Players            = game:GetService("Players")
 local RunService         = game:GetService("RunService")
@@ -18,17 +16,33 @@ local LocalPlayer        = Players.LocalPlayer
 local RemoteEvent        = ReplicatedStorage:FindFirstChild("RemoteEvent") or ReplicatedStorage:WaitForChild("RemoteEvent", 5)
 
 -- ============================================================
--- COLORS
+-- THEME TABLE (RED default)
+-- ============================================================
+local THEMES = {
+    RED    = { accent = Color3.fromRGB(230, 30, 45),   dim = Color3.fromRGB(120, 15, 22),   border = Color3.fromRGB(34, 20, 22) },
+    PURPLE = { accent = Color3.fromRGB(175, 90, 255),  dim = Color3.fromRGB(80, 40, 120),   border = Color3.fromRGB(40, 24, 55) },
+    BLUE   = { accent = Color3.fromRGB(65, 130, 255),  dim = Color3.fromRGB(30, 60, 120),   border = Color3.fromRGB(22, 30, 48) },
+    GREEN  = { accent = Color3.fromRGB(65, 220, 125),  dim = Color3.fromRGB(30, 110, 60),   border = Color3.fromRGB(20, 40, 28) },
+    ORANGE = { accent = Color3.fromRGB(245, 130, 30),  dim = Color3.fromRGB(120, 60, 15),   border = Color3.fromRGB(45, 28, 15) },
+    PINK   = { accent = Color3.fromRGB(255, 90, 180),  dim = Color3.fromRGB(130, 40, 90),   border = Color3.fromRGB(45, 22, 35) },
+    WHITE  = { accent = Color3.fromRGB(235, 235, 235), dim = Color3.fromRGB(120, 120, 120), border = Color3.fromRGB(40, 40, 45) },
+}
+local currentTheme = "RED"
+
+-- ============================================================
+-- COLORS (mutable — ApplyTheme updates these)
 -- ============================================================
 local BG          = Color3.fromRGB(6, 6, 7)
 local BG_ITEM     = Color3.fromRGB(13, 13, 15)
 local BG_HOVER    = Color3.fromRGB(22, 14, 16)
-local BORDER      = Color3.fromRGB(34, 20, 22)
-local ACCENT      = Color3.fromRGB(230, 30, 45)
-local ACCENT_DIM  = Color3.fromRGB(120, 15, 22)
+local BORDER      = THEMES.RED.border
+local ACCENT      = THEMES.RED.accent
+local ACCENT_DIM  = THEMES.RED.dim
 local TEXT        = Color3.fromRGB(255, 255, 255)
 local TEXT_DIM    = Color3.fromRGB(170, 170, 178)
-local TEXT_ON     = Color3.fromRGB(255, 90, 100)
+local TEXT_ON     = THEMES.RED.accent
+
+local ThemedElements = { windows = {}, toggles = {}, buttons = {}, dropdowns = {}, sections = {} }
 
 -- ============================================================
 -- ROOT
@@ -36,6 +50,8 @@ local TEXT_ON     = Color3.fromRGB(255, 90, 100)
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "BlackoutTripleGUI"
 ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.DisplayOrder = 2147483647
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Enabled = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
@@ -222,7 +238,7 @@ local LoadGui = Instance.new("ScreenGui")
 LoadGui.Name = "BlackoutLoader"
 LoadGui.ResetOnSpawn = false
 LoadGui.IgnoreGuiInset = true
-LoadGui.DisplayOrder = 999
+LoadGui.DisplayOrder = 2147483647
 LoadGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 LoadGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -246,7 +262,7 @@ LogoLbl.BackgroundTransparency = 1
 LogoLbl.Text = ""
 LogoLbl.Font = Enum.Font.Code
 LogoLbl.TextSize = 48
-LogoLbl.TextColor3 = ACCENT
+LogoLbl.TextColor3 = THEMES.RED.accent
 LogoLbl.TextTransparency = 1
 LogoLbl.TextStrokeTransparency = 1
 LogoLbl.TextStrokeColor3 = Color3.fromRGB(255, 90, 100)
@@ -259,7 +275,7 @@ SubLbl.BackgroundTransparency = 1
 SubLbl.Text = "LOADING // PLEASE WAIT"
 SubLbl.Font = Enum.Font.Code
 SubLbl.TextSize = 12
-SubLbl.TextColor3 = ACCENT_DIM
+SubLbl.TextColor3 = THEMES.RED.dim
 SubLbl.TextTransparency = 1
 SubLbl.Parent = LoadCenter
 
@@ -274,7 +290,7 @@ Instance.new("UICorner", BarBg).CornerRadius = UDim.new(1, 0)
 
 local BarFill = Instance.new("Frame")
 BarFill.Size = UDim2.new(0, 0, 1, 0)
-BarFill.BackgroundColor3 = ACCENT
+BarFill.BackgroundColor3 = THEMES.RED.accent
 BarFill.BorderSizePixel = 0
 BarFill.Parent = BarBg
 Instance.new("UICorner", BarFill).CornerRadius = UDim.new(1, 0)
@@ -302,7 +318,7 @@ local function RunLoadingSequence()
     for i = 1, #text do LogoLbl.Text = string.sub(text, 1, i); task.wait(0.04) end
     for _ = 1, 3 do
         LogoLbl.TextColor3 = Color3.fromRGB(255, 200, 200); task.wait(0.05)
-        LogoLbl.TextColor3 = ACCENT; task.wait(0.05)
+        LogoLbl.TextColor3 = THEMES.RED.accent; task.wait(0.05)
     end
     local steps = 40
     for i = 0, steps do
@@ -321,6 +337,107 @@ local function RunLoadingSequence()
     local bgT = TweenService:Create(LoadBG, TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1})
     bgT:Play(); bgT.Completed:Wait(); task.wait(0.05)
     LoadGui:Destroy()
+end
+
+-- ============================================================
+-- DROPDOWN SYSTEM
+-- ============================================================
+local DropdownLayer = Instance.new("Frame")
+DropdownLayer.Size = UDim2.fromScale(1, 1)
+DropdownLayer.BackgroundTransparency = 1
+DropdownLayer.BorderSizePixel = 0
+DropdownLayer.Visible = false
+DropdownLayer.ZIndex = 5000
+DropdownLayer.Parent = ScreenGui
+
+local DropdownMenu = Instance.new("Frame")
+DropdownMenu.BackgroundColor3 = Color3.fromRGB(11, 11, 14)
+DropdownMenu.BorderSizePixel = 0
+DropdownMenu.Visible = false
+DropdownMenu.ZIndex = 5001
+DropdownMenu.Parent = DropdownLayer
+Instance.new("UICorner", DropdownMenu).CornerRadius = UDim.new(0, 5)
+local DStroke = Instance.new("UIStroke", DropdownMenu)
+DStroke.Color = ACCENT_DIM
+DStroke.Thickness = 1
+
+local DropdownScroll = Instance.new("ScrollingFrame")
+DropdownScroll.Position = UDim2.fromOffset(4, 4)
+DropdownScroll.Size = UDim2.new(1, -8, 1, -8)
+DropdownScroll.BackgroundTransparency = 1
+DropdownScroll.BorderSizePixel = 0
+DropdownScroll.ScrollBarThickness = 3
+DropdownScroll.ScrollBarImageColor3 = ACCENT
+DropdownScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+DropdownScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+DropdownScroll.ZIndex = 5002
+DropdownScroll.Parent = DropdownMenu
+
+local DropdownList = Instance.new("UIListLayout")
+DropdownList.Padding = UDim.new(0, 3)
+DropdownList.SortOrder = Enum.SortOrder.LayoutOrder
+DropdownList.Parent = DropdownScroll
+
+local activeDropdown = nil
+
+local function closeDropdown()
+    activeDropdown = nil
+    DropdownMenu.Visible = false
+    DropdownLayer.Visible = false
+    for _, child in ipairs(DropdownScroll:GetChildren()) do
+        if child:IsA("GuiObject") then child:Destroy() end
+    end
+end
+
+DropdownLayer.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        closeDropdown()
+    end
+end)
+
+-- ============================================================
+-- THEME APPLIER
+-- ============================================================
+local ApplyTheme
+ApplyTheme = function(name)
+    local t = THEMES[name]
+    if not t then return end
+    currentTheme = name
+    ACCENT     = t.accent
+    ACCENT_DIM = t.dim
+    BORDER     = t.border
+    TEXT_ON    = t.accent
+
+    for _, w in ipairs(ThemedElements.windows) do
+        if w.mainStroke then w.mainStroke.Color = BORDER end
+        if w.glow then w.glow.BackgroundColor3 = ACCENT end
+        if w.divider then w.divider.BackgroundColor3 = BORDER end
+        if w.titleDot then w.titleDot.BackgroundColor3 = ACCENT end
+        if w.scroll then w.scroll.ScrollBarImageColor3 = ACCENT_DIM end
+    end
+
+    for _, tog in ipairs(ThemedElements.toggles) do
+        if tog.render then pcall(tog.render) end
+    end
+
+    for _, b in ipairs(ThemedElements.buttons) do
+        if b.stroke then b.stroke.Color = BORDER end
+        if b.bar then b.bar.BackgroundColor3 = BORDER end
+        if b.label then b.label.TextColor3 = TEXT end
+    end
+
+    for _, d in ipairs(ThemedElements.dropdowns) do
+        if d.stroke then d.stroke.Color = BORDER end
+        if d.bar then d.bar.BackgroundColor3 = BORDER end
+        if d.valueTxt then d.valueTxt.TextColor3 = TEXT_ON end
+    end
+
+    for _, s in ipairs(ThemedElements.sections) do
+        if s then s.TextColor3 = ACCENT_DIM end
+    end
+
+    if DStroke then DStroke.Color = ACCENT_DIM end
+    if DropdownScroll then DropdownScroll.ScrollBarImageColor3 = ACCENT end
 end
 
 -- ============================================================
@@ -419,6 +536,11 @@ local function CreateWindow(title, posX, posY)
     Pad.PaddingRight = UDim.new(0, 7)
     Pad.Parent = Scroll
 
+    table.insert(ThemedElements.windows, {
+        main = Main, mainStroke = MainStroke, glow = Glow,
+        divider = Divider, titleDot = TitleDot, scroll = Scroll,
+    })
+
     local function CreateSection(text)
         local Lbl = Instance.new("TextLabel")
         Lbl.Size = UDim2.new(1, 0, 0, 16)
@@ -428,6 +550,7 @@ local function CreateWindow(title, posX, posY)
         Lbl.Font = Enum.Font.Code; Lbl.TextSize = 9
         Lbl.TextXAlignment = Enum.TextXAlignment.Left
         Lbl.Parent = Scroll
+        table.insert(ThemedElements.sections, Lbl)
         return Lbl
     end
 
@@ -498,6 +621,12 @@ local function CreateWindow(title, posX, posY)
                 if not ok then warn("[Blackout] " .. tostring(err)) end
             end
         end)
+
+        table.insert(ThemedElements.toggles, {
+            btn = Btn, stroke = Stroke, bar = Bar, label = Label, statusTxt = StatusTxt,
+            render = function() Render(false) end,
+        })
+
         return Btn
     end
 
@@ -546,7 +675,130 @@ local function CreateWindow(title, posX, posY)
                 if not ok then warn("[Blackout] " .. tostring(err)) end
             end
         end)
+
+        table.insert(ThemedElements.buttons, { btn = Btn, stroke = Stroke, bar = Bar, label = Label })
+
         return Btn
+    end
+
+    local function CreateDropdown(label, value, options, callback)
+        local Btn = Instance.new("TextButton")
+        Btn.Size = UDim2.new(1, 0, 0, 24)
+        Btn.BackgroundColor3 = BG_ITEM
+        Btn.Text = ""
+        Btn.AutoButtonColor = false
+        Btn.BorderSizePixel = 0
+        Btn.Parent = Scroll
+        Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 3)
+
+        local Stroke = Instance.new("UIStroke")
+        Stroke.Color = BORDER
+        Stroke.Thickness = 1
+        Stroke.Parent = Btn
+
+        local Bar = Instance.new("Frame")
+        Bar.Size = UDim2.new(0, 2, 0, 12)
+        Bar.Position = UDim2.new(0, 0, 0.5, -6)
+        Bar.BackgroundColor3 = BORDER
+        Bar.BorderSizePixel = 0
+        Bar.Parent = Btn
+        Instance.new("UICorner", Bar).CornerRadius = UDim.new(1, 0)
+
+        local Label = Instance.new("TextLabel")
+        Label.Size = UDim2.new(0.5, 0, 1, 0)
+        Label.Position = UDim2.new(0, 13, 0, 0)
+        Label.BackgroundTransparency = 1
+        Label.Text = string.upper(label)
+        Label.TextColor3 = TEXT
+        Label.Font = Enum.Font.Code
+        Label.TextSize = 10
+        Label.TextXAlignment = Enum.TextXAlignment.Left
+        Label.Parent = Btn
+
+        local ValueTxt = Instance.new("TextLabel")
+        ValueTxt.Size = UDim2.new(0.4, 0, 1, 0)
+        ValueTxt.Position = UDim2.new(0.55, 0, 0, 0)
+        ValueTxt.BackgroundTransparency = 1
+        ValueTxt.Text = tostring(value)
+        ValueTxt.TextColor3 = TEXT_ON
+        ValueTxt.Font = Enum.Font.Code
+        ValueTxt.TextSize = 10
+        ValueTxt.TextXAlignment = Enum.TextXAlignment.Right
+        ValueTxt.Parent = Btn
+
+        local currentValue = value
+
+        local function updateValue(v)
+            currentValue = v
+            ValueTxt.Text = tostring(v)
+            if callback then
+                local ok, err = pcall(callback, v)
+                if not ok then warn("[Blackout] " .. tostring(err)) end
+            end
+        end
+
+        local function openMenu()
+            closeDropdown()
+            activeDropdown = Btn
+            DropdownLayer.Visible = true
+            local absPos = Btn.AbsolutePosition
+            local absSize = Btn.AbsoluteSize
+            local viewport = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1280, 720)
+            local menuWidth = math.max(absSize.X, 180)
+            local rowHeight = 26
+            local menuHeight = math.min(#options, 7) * rowHeight + 10
+            local x = absPos.X
+            if x + menuWidth > viewport.X - 8 then x = viewport.X - menuWidth - 8 end
+            local y = absPos.Y + absSize.Y + 5
+            if y + menuHeight > viewport.Y - 8 then y = absPos.Y - menuHeight - 5 end
+            if y < 8 then y = 8 end
+            DropdownMenu.Position = UDim2.fromOffset(x, y)
+            DropdownMenu.Size = UDim2.fromOffset(menuWidth, menuHeight)
+            DropdownMenu.Visible = true
+            for i, opt in ipairs(options) do
+                local o = Instance.new("TextButton")
+                o.Size = UDim2.new(1, -2, 0, 23)
+                o.BackgroundColor3 = Color3.fromRGB(16, 16, 20)
+                o.BorderSizePixel = 0
+                o.AutoButtonColor = false
+                o.Text = "  " .. tostring(opt)
+                o.TextColor3 = (opt == currentValue) and ACCENT or TEXT
+                o.Font = Enum.Font.Code
+                o.TextSize = 10
+                o.TextXAlignment = Enum.TextXAlignment.Left
+                o.LayoutOrder = i
+                o.ZIndex = 5003
+                o.Parent = DropdownScroll
+                Instance.new("UICorner", o).CornerRadius = UDim.new(0, 3)
+                o.MouseEnter:Connect(function()
+                    TweenService:Create(o, TweenInfo.new(0.1), {BackgroundColor3 = BG_HOVER}):Play()
+                end)
+                o.MouseLeave:Connect(function()
+                    TweenService:Create(o, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(16, 16, 20)}):Play()
+                end)
+                o.MouseButton1Click:Connect(function()
+                    updateValue(opt)
+                    closeDropdown()
+                end)
+            end
+        end
+
+        Btn.MouseButton1Click:Connect(openMenu)
+        Btn.MouseEnter:Connect(function()
+            TweenService:Create(Btn, TweenInfo.new(0.1), {BackgroundColor3 = BG_HOVER}):Play()
+        end)
+        Btn.MouseLeave:Connect(function()
+            TweenService:Create(Btn, TweenInfo.new(0.1), {BackgroundColor3 = BG_ITEM}):Play()
+        end)
+
+        table.insert(ThemedElements.dropdowns, { btn = Btn, stroke = Stroke, bar = Bar, label = Label, valueTxt = ValueTxt })
+
+        return {
+            Button = Btn,
+            SetValue = function(v) currentValue = v; ValueTxt.Text = tostring(v) end,
+            GetValue = function() return currentValue end,
+            SetVisible = function(v) Btn.Visible = v end
+        }
     end
 
     local function CreateSlider(name, minV, maxV, default, callback)
@@ -653,95 +905,6 @@ local function CreateWindow(title, posX, posY)
         return Container
     end
 
-    local function CreateDropdown(name, values, multi, callback)
-        local Container = Instance.new("Frame")
-        Container.Size = UDim2.new(1, 0, 0, 24)
-        Container.BackgroundColor3 = BG_ITEM; Container.BorderSizePixel = 0
-        Container.ClipsDescendants = true
-        Container.Parent = Scroll
-        Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 3)
-        local Stroke = Instance.new("UIStroke")
-        Stroke.Color = BORDER; Stroke.Thickness = 1; Stroke.Parent = Container
-
-        local Header = Instance.new("TextButton")
-        Header.Size = UDim2.new(1, 0, 0, 24)
-        Header.BackgroundTransparency = 1; Header.Text = ""
-        Header.AutoButtonColor = false; Header.Parent = Container
-
-        local Label = Instance.new("TextLabel")
-        Label.Size = UDim2.new(1, -30, 1, 0)
-        Label.Position = UDim2.new(0, 13, 0, 0)
-        Label.BackgroundTransparency = 1
-        Label.Text = string.upper(name); Label.TextColor3 = TEXT
-        Label.Font = Enum.Font.Code; Label.TextSize = 10
-        Label.TextXAlignment = Enum.TextXAlignment.Left; Label.Parent = Header
-
-        local Arrow = Instance.new("TextLabel")
-        Arrow.Size = UDim2.new(0, 20, 1, 0)
-        Arrow.Position = UDim2.new(1, -22, 0, 0)
-        Arrow.BackgroundTransparency = 1
-        Arrow.Text = "▼"; Arrow.TextColor3 = TEXT_DIM
-        Arrow.Font = Enum.Font.Code; Arrow.TextSize = 9
-        Arrow.Parent = Header
-
-        local Options = Instance.new("Frame")
-        Options.Size = UDim2.new(1, -10, 0, 0)
-        Options.Position = UDim2.new(0, 5, 0, 25)
-        Options.BackgroundTransparency = 1
-        Options.Parent = Container
-        local OL = Instance.new("UIListLayout")
-        OL.Padding = UDim.new(0, 1); OL.Parent = Options
-
-        local open = false
-        local selected = {}
-        local optionButtons = {}
-
-        local function Refresh()
-            for _, b in pairs(optionButtons) do b:Destroy() end
-            optionButtons = {}
-            for _, v in ipairs(values) do
-                local o = Instance.new("TextButton")
-                o.Size = UDim2.new(1, 0, 0, 18)
-                o.BackgroundColor3 = selected[v] and Color3.fromRGB(30, 12, 14) or BG_ITEM
-                o.Text = ""
-                o.AutoButtonColor = false; o.BorderSizePixel = 0
-                o.Parent = Options
-                Instance.new("UICorner", o).CornerRadius = UDim.new(0, 2)
-                local l = Instance.new("TextLabel")
-                l.Size = UDim2.new(1, -8, 1, 0)
-                l.Position = UDim2.new(0, 6, 0, 0)
-                l.BackgroundTransparency = 1
-                l.Text = v
-                l.TextColor3 = selected[v] and TEXT_ON or TEXT_DIM
-                l.Font = Enum.Font.Code; l.TextSize = 9
-                l.TextXAlignment = Enum.TextXAlignment.Left
-                l.Parent = o
-                o.MouseButton1Click:Connect(function()
-                    if multi then
-                        selected[v] = not selected[v] or nil
-                    else
-                        selected = { [v] = true }
-                    end
-                    Refresh()
-                    if callback then pcall(callback, selected) end
-                end)
-                table.insert(optionButtons, o)
-            end
-            local h = #values * 19
-            Options.Size = UDim2.new(1, -10, 0, h)
-            Container.Size = UDim2.new(1, 0, 0, 24 + (open and h + 2 or 0))
-        end
-
-        Header.MouseButton1Click:Connect(function()
-            open = not open
-            Arrow.Text = open and "▲" or "▼"
-            Refresh()
-        end)
-        Refresh()
-        Container.Size = UDim2.new(1, 0, 0, 24)
-        return Container
-    end
-
     do
         local dragging, startPos, startInput
         Header.InputBegan:Connect(function(input)
@@ -753,6 +916,7 @@ local function CreateWindow(title, posX, posY)
             if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                 local d = input.Position - startInput
                 Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+                if activeDropdown then closeDropdown() end
             end
         end)
         UserInputService.InputEnded:Connect(function(input)
@@ -1561,6 +1725,20 @@ CombatPanel.CreateButton("Refresh Game Status", function()
 end)
 
 -- ============================================================
+-- PANEL 4 — THEME (far right)
+-- ============================================================
+local ThemePanel = CreateWindow("BLACKOUT // THEME", 740, 20)
+
+ThemePanel.CreateSection("theme")
+ThemePanel.CreateDropdown("THEME COLOR", "RED",
+    {"RED", "PURPLE", "BLUE", "GREEN", "ORANGE", "PINK", "WHITE"}, function(v)
+    ApplyTheme(v)
+end)
+
+-- Apply RED once everything exists so all elements are properly synced.
+ApplyTheme("RED")
+
+-- ============================================================
 -- OPEN BY DEFAULT
 -- ============================================================
 ScreenGui.Enabled = true
@@ -1575,4 +1753,4 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
-print("[Blackout] Tracery port loaded. RightShift = toggle GUI")
+print("[Blackout] Flee + THEME loaded. RightShift = toggle GUI")
